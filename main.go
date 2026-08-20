@@ -525,6 +525,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.jobs, listCmd = m.jobs.Update(msg)
 			cmds = append(cmds, listCmd)
 
+			// event to restore the selected job after filtering,
+			// by matching the jobId
+			if _, ok := msg.(list.FilterMatchesMsg); ok && m.currentJobID != "" {
+				for i, it := range m.jobs.VisibleItems() {
+					if j, ok := it.(slurm.JobInfo); ok && j.JobID == m.currentJobID {
+						m.jobs.Select(i)
+						break
+					}
+				}
+			}
+
 			if item, ok := m.jobs.SelectedItem().(slurm.JobInfo); ok {
 				if item.JobID != m.currentJobID {
 					m.currentJobID = item.JobID
